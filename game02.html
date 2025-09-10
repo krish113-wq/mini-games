@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Game Website</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background: linear-gradient(to right, #2193b0, #6dd5ed);
+      color: white;
+    }
+
+    header {
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    #gameCanvas {
+      background: #fff;
+      display: block;
+      margin: 20px auto;
+      border: 3px solid #333;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #ff5722;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #e64a19;
+    }
+
+    footer {
+      margin-top: 20px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎮 Mini Game Website 🎮</h1>
+    <p>Press SPACE to jump and avoid the blocks!</p>
+  </header>
+
+  <canvas id="gameCanvas" width="600" height="200"></canvas>
+  <br>
+  <button onclick="restartGame()">Restart Game</button>
+
+  <footer>
+    <p>Made with ❤️ by Abhinav</p>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let player = { x: 50, y: 150, width: 30, height: 30, dy: 0, jump: -8, gravity: 0.4 };
+    let obstacles = [];
+    let score = 0;
+    let gameOver = false;
+
+    function drawPlayer() {
+      ctx.fillStyle = "red";
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function drawObstacles() {
+      ctx.fillStyle = "green";
+      obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
+    }
+
+    function updateObstacles() {
+      if (Math.random() < 0.02) {
+        obstacles.push({ x: canvas.width, y: 170, width: 20, height: 30 });
+      }
+      obstacles.forEach(o => o.x -= 3);
+      obstacles = obstacles.filter(o => o.x + o.width > 0);
+    }
+
+    function detectCollision() {
+      for (let o of obstacles) {
+        if (player.x < o.x + o.width &&
+            player.x  + player.width > o.x &&
+            player.y < o.y + o.height &&
+            player.y + player.height > o.y) {
+          gameOver = true;
+        }
+      }
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "black";
+      ctx.font = "16px Arial";
+      ctx.fillText("Score: " + score, 10, 20);
+    }
+
+    function gameLoop() {
+      if (gameOver) {
+        ctx.fillStyle = "black";
+        ctx.font = "30px Arial";
+        ctx.fillText("Game Over!", 220, 100);
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Player physics
+      player.y += player.dy;
+      player.dy += player.gravity;
+      if (player.y > 150) {
+        player.y = 150;
+        player.dy = 0;
+      }
+
+      drawPlayer();
+      updateObstacles();
+      drawObstacles();
+      detectCollision();
+      drawScore();
+
+      score++;
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space" && player.y >= 150) {
+        player.dy = player.jump;
+      }
+    });
+
+    function restartGame() {
+      player.y = 150;
+      player.dy = 0;
+      obstacles = [];
+      score = 0;
+      gameOver = false;
+      gameLoop();
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
+
